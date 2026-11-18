@@ -49,7 +49,7 @@ def tab_overview(df, df_all, chart_template):
         }
     ))
     fig_gauge.update_layout(height=200, margin=dict(l=10, r=10, t=30, b=10), template=chart_template)
-    c5.plotly_chart(fig_gauge, use_container_width=True)
+    c5.plotly_chart(fig_gauge, width="stretch")
 
     # --- 预警 ---
     st.divider()
@@ -76,7 +76,7 @@ def tab_overview(df, df_all, chart_template):
     fig_bar = px.bar(subject_mean, x="科目", y="平均分", title="📈 各科平均分对比",
                      color="科目", text_auto=".1f", height=380)
     fig_bar.update_layout(showlegend=False, template=chart_template)
-    col_left.plotly_chart(fig_bar, use_container_width=True, theme=None)
+    col_left.plotly_chart(fig_bar, width="stretch", theme=None)
 
     level_cnt = df["等级"].value_counts().reset_index()
     level_cnt.columns = ["等级", "人数"]
@@ -85,7 +85,7 @@ def tab_overview(df, df_all, chart_template):
                      color="等级", color_discrete_map=COLOR_MAP, height=380)
     fig_pie.update_traces(textinfo="label+percent+value")
     fig_pie.update_layout(template=chart_template)
-    col_right.plotly_chart(fig_pie, use_container_width=True, theme=None)
+    col_right.plotly_chart(fig_pie, width="stretch", theme=None)
 
     # --- 直方图 + TOP10 ---
     col_a, col_b = st.columns(2)
@@ -93,14 +93,14 @@ def tab_overview(df, df_all, chart_template):
     fig_hist = px.histogram(df, x="平均分", nbins=12, title="📊 平均分分布直方图",
                             color="等级", color_discrete_map=COLOR_MAP, height=380)
     fig_hist.update_layout(bargap=0.05, template=chart_template)
-    col_a.plotly_chart(fig_hist, use_container_width=True, theme=None)
+    col_a.plotly_chart(fig_hist, width="stretch", theme=None)
 
     top10 = df.sort_values("总分", ascending=False).head(10)
     fig_rank = px.bar(top10, y="姓名", x="总分", orientation="h",
                       title="🏅 总分 TOP 10", color="总分", height=380,
                       color_continuous_scale="Viridis")
     fig_rank.update_layout(template=chart_template)
-    col_b.plotly_chart(fig_rank, use_container_width=True, theme=None)
+    col_b.plotly_chart(fig_rank, width="stretch", theme=None)
 
     # --- 箱线图 + 班级堆叠柱 ---
     col_box, col_stack = st.columns(2)
@@ -110,7 +110,7 @@ def tab_overview(df, df_all, chart_template):
         fig_box.add_trace(go.Box(y=df[s], name=s, marker_color="#6366f1"))
     fig_box.update_layout(title="📦 各科成绩分布箱线图", height=380,
                           yaxis_title="分数", showlegend=False, template=chart_template)
-    col_box.plotly_chart(fig_box, use_container_width=True, theme=None)
+    col_box.plotly_chart(fig_box, width="stretch", theme=None)
 
     class_subj = df.groupby("班级")[SUBJECTS].mean().reset_index()
     class_melt = class_subj.melt(id_vars="班级", value_vars=SUBJECTS,
@@ -118,7 +118,7 @@ def tab_overview(df, df_all, chart_template):
     fig_stack = px.bar(class_melt, x="班级", y="平均分", color="科目",
                        barmode="group", title="🏫 各班各科平均分对比", height=380)
     fig_stack.update_layout(template=chart_template)
-    col_stack.plotly_chart(fig_stack, use_container_width=True, theme=None)
+    col_stack.plotly_chart(fig_stack, width="stretch", theme=None)
 
     # --- 明细 + 下载 ---
     st.divider()
@@ -133,7 +133,7 @@ def tab_overview(df, df_all, chart_template):
         data=output.getvalue(),
         file_name="student_score_filtered.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        use_container_width=True
+        width="stretch"
     )
     st.dataframe(df, width="stretch", height=380, hide_index=True)
 
@@ -150,7 +150,7 @@ def tab_analysis(df, chart_template):
     fig_heat = px.imshow(corr, text_auto=".2f", color_continuous_scale="RdBu_r",
                          zmin=-1, zmax=1, title="各科目 Pearson 相关系数", height=450)
     fig_heat.update_layout(template=chart_template)
-    st.plotly_chart(fig_heat, use_container_width=True, theme=None)
+    st.plotly_chart(fig_heat, width="stretch", theme=None)
 
     # 散点图矩阵
     st.subheader("🌐 散点图矩阵（科目两两关系）")
@@ -158,7 +158,7 @@ def tab_analysis(df, chart_template):
                                     color_discrete_map=COLOR_MAP,
                                     hover_data=["姓名", "班级"], height=600)
     fig_scatter.update_layout(template=chart_template)
-    st.plotly_chart(fig_scatter, use_container_width=True, theme=None)
+    st.plotly_chart(fig_scatter, width="stretch", theme=None)
 
     # 雷达图：班级能力对比
     st.subheader("📡 各班平均能力雷达图")
