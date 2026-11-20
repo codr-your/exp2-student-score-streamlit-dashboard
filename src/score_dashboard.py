@@ -20,6 +20,7 @@ def generate_data():
     })
     return df_raw
 
+
 def get_level(avg):
     if avg >= 85:
         return "优秀(85-100)"
@@ -30,17 +31,25 @@ def get_level(avg):
     else:
         return "不及格(<60)"
 
+
 def load_and_clean(df_raw):
-    """数据清洗 + 计算总分平均分等级"""
-    df = df_raw.dropna()
+    """【兼容文本脏数据，转NaN，不再直接dropna】计算总分平均分等级"""
+    df = df_raw.copy()
     subjects = ["语文", "数学", "英语", "物理"]
     for col in subjects:
         if col in df.columns:
-            df = df[(df[col] <= 100) & (df[col] >= 0)]
+            # 字符串转为NaN
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+            # 超出0-100也置NaN
+            df.loc[(df[col] < 0) | (df[col] > 100), col] = np.nan
+    # 按科目求和，自动跳过NaN
     df["总分"] = df[subjects].sum(axis=1)
-    df["平均分"] = round(df["总分"] / len(subjects), 2)
-    df["等级"] = df["平均分"].apply(get_level)
+    # 有效科目数量，防止全部为空时分母为0
+    valid_cnt = df[subjects].notna().sum(axis=1)
+    df["平均分"] = np.where(valid_cnt > 0, round(df["总分"] / valid_cnt, 2), np.nan)
+    df["等级"] = df["平均分"].apply(lambda x: get_level(x) if pd.notna(x) else "无效成绩")
     return df
+
 
 # ---------- 功能1：侧边栏数据源切换 ----------
 st.sidebar.header("📦 数据源")
@@ -88,7 +97,7 @@ st.set_page_config(page_title="班级学生成绩看板", layout="wide")
 st.markdown("""
 <style>
 .main {
-    background-color:#f7f9fc;
+background-color:#f7f9fc;
 }
 </style>
 """, unsafe_allow_html=True)
